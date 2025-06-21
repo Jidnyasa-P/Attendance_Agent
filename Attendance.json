@@ -1,0 +1,246 @@
+{
+  "name": "Attendance",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are an attendance analyzer. Based on the following data, classify students into Present (before 9:15 AM), Late (between 9:15–9:45 AM), and Absent (after 9:45 AM or no time).\n{{ $json.message }}\nInput:\nName: Jidnyasa Patil, Time In: 8:59 AM\nName: Aarav Gupta, Time In: 9:35 AM\nName: Sanya Mehta, Time In: Empty\nName: Riya Shah, Time In: 10:10 AM\nName: Tanish Goyal, Time In: 9:05 AM\n\nReturn result strictly in valid like ensuring the conditions are met for late present and absent:\n{\n  Present: name1, name2,\n  Late: name3,\n  Absent: name4, name5\n}\ni only want the content i have written in {} as output. do not include any other test other than that.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -2460,
+        1260
+      ],
+      "id": "24ff2859-e91e-4a13-a353-9fa66bdf6559",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "mindcraft-gpt4o",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -2500,
+        1500
+      ],
+      "id": "28280653-d958-4406-983b-63575447ef6e",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "iULLPJsoTxMZU5fK",
+          "name": "Azure Open AI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10,
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2940,
+        1220
+      ],
+      "id": "4b66a953-c6c5-4ff5-b4c7-fe314571402b",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0",
+          "mode": "list",
+          "cachedResultName": "Attendance Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1190581648,
+          "mode": "list",
+          "cachedResultName": "sample_attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0/edit#gid=1190581648"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2620,
+        1080
+      ],
+      "id": "b4da6a18-259d-4c81-9b6c-3f29c3e7ff69",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mYTcoeUmUvqhTUo8",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = items.map(item => {\n  const name = item.json[\"Name\"];\n  const time = item.json[\"Time In\"] || \"Empty\";\n  return `Name: ${name}, Time In: ${time}`;\n});\n\nreturn [{\n  json: {\n    message: rows.join(\", \")\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2700,
+        1340
+      ],
+      "id": "0dbd33c1-88a2-4888-a0c8-21bd7c1802f1",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0",
+          "mode": "list",
+          "cachedResultName": "Attendance Data",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1190581648,
+          "mode": "list",
+          "cachedResultName": "sample_attendance",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qRLHZzusTCuAG6QtCIg_-SDcufnhr0praAjZP9etKM0/edit#gid=1190581648"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Time In",
+              "displayName": "Time In",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "output",
+              "displayName": "output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.6,
+      "position": [
+        -2120,
+        1120
+      ],
+      "id": "23902b91-642a-48fd-96e4-d03b041c0165",
+      "name": "Google Sheets1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "mYTcoeUmUvqhTUo8",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3844d90d-2144-4580-85f9-17fd2b9ea52d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cec7d5f4d90c59f28e9a0b1f028f0965a4d39227ca70737f1cba51f3dc0a713f"
+  },
+  "id": "VjZpzBMdECFWCxEi",
+  "tags": []
+}
